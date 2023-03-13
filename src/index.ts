@@ -1,16 +1,17 @@
 interface Event {
-    passThroughOnException?: boolean;
+    cron: string;
+    type: string;
+    scheduledTime: number;
 }
 
 interface Context {
     waitUntil(promise: Promise<any>): void;
-    processOnlineStatus(): void;
 }
 
-type Environment = {
-    URL: string;
+interface Environment {
+    TARGET_URL: string;
     DISCORD_WEBHOOK_URL: string;
-};
+}
 
 const checkIfOnline = async (url: string): Promise<boolean> => {
     try {
@@ -21,21 +22,24 @@ const checkIfOnline = async (url: string): Promise<boolean> => {
     }
 };
 
-const sendDiscordMessage = (webhookUrl: string, url: string) => (isOnline: boolean) => {
+const sendDiscordMessage = async (webhookUrl: string, url: string, isOnline: boolean) => {
     if (isOnline) return;
-    fetch(webhookUrl, {
+    await fetch(webhookUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {"Content-Type": "application/json", "Accept": "application/json"},
         body: JSON.stringify({ content: `The URL ${url} is offline` }),
     });
 };
 
-const scheduled = (event: Event, env: Environment, ctx: Context) => {
-    checkIfOnline(env.URL)
-        .then(sendDiscordMessage(env.DISCORD_WEBHOOK_URL, env.URL))
-        .then(() => ctx.processOnlineStatus())
-        .catch(console.error)
-        .finally(() => ctx.waitUntil(Promise.resolve()));
+const scheduled = async (event: Event, env: Environment, context: Context) => {
+    try {
+        const isOnline = await checkIfOnline(env.TARGET_URL);
+        await sendDiscordMessage(env.DISCORD_WEBHOOK_URL, env.TARGET_URL, isOnline);
+    } catch (error) {
+        console.error(error);
+    } finally {
+        context.waitUntil(Promise.resolve());
+    }
 };
 
 export default { scheduled };
