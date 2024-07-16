@@ -10,9 +10,6 @@ This is a Cloudflare Worker that monitors the status of a target URL and sends a
    - `TARGET_URL`: The URL that you want to monitor.
 5. Deploy the worker to Cloudflare by running `wrangler publish`.
 6. Set up a scheduled event to run the worker periodically using Cloudflare Workers dashboard or API.
-   - In the dashboard, go to the Workers tab and click "Create a Worker".
-   - Paste the contents of `index.js` in the code editor and click "Save and Deploy".
-   - Go to the "Scheduled" tab, set up the frequency and the cron expression, and save the event.
 
 ## Secrets
 The worker requires two secrets to run:
@@ -28,7 +25,8 @@ wrangler secret put TARGET_URL
 ```
 
 ## How to run locally
-You can test the worker locally using `wrangler dev` command. The `wrangler dev` command will start a local development server and simulate the Cloudflare Workers environment. To test the worker, run the following command:
+You can test the worker locally using `wrangler dev` command.
+This will start a local development server and simulate the Cloudflare Workers environment. To test the worker, run the following command:
 ```
 wrangler dev --env DISCORD_WEBHOOK_URL=<your-discord-webhook-url> --env TARGET_URL=<your-target-url>
 ```
